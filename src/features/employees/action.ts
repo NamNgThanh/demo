@@ -102,23 +102,6 @@ export const createEmployee = async (
     if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
     const payload = await buildCreatePayload(employeeData);
 
-    // Lưu danh mục mới nếu cần
-    if (payload.CHUC_VU) {
-      await prisma.dANH_MUC_CHUC_VU.upsert({
-        where: { TEN_CV: payload.CHUC_VU },
-        update: {},
-        create: { TEN_CV: payload.CHUC_VU },
-      });
-    }
-
-    if (payload.PHONGBAN) {
-      await prisma.dANH_MUC_PHONG_BAN.upsert({
-        where: { TEN_PB: payload.PHONGBAN },
-        update: {},
-        create: { TEN_PB: payload.PHONGBAN },
-      });
-    }
-
     const { TAO_TAI_KHOAN, USER_NAME, PASSWORD } = employeeData;
     let nguoiDungId = undefined;
 
@@ -184,23 +167,6 @@ export const updateEmployee = async (
         employeeData.TRANG_THAI === "DANG_LAM_VIEC" ? toDate(NGAY_NHAN_VIEC) : null,
       NGAY_THU_VIEC: employeeData.TRANG_THAI === "THU_VIEC" ? toDate(NGAY_NHAN_VIEC) : null,
     };
-
-    // Lưu danh mục mới nếu cần
-    if (payload.CHUC_VU) {
-      await prisma.dANH_MUC_CHUC_VU.upsert({
-        where: { TEN_CV: payload.CHUC_VU },
-        update: {},
-        create: { TEN_CV: payload.CHUC_VU },
-      });
-    }
-
-    if (payload.PHONGBAN) {
-      await prisma.dANH_MUC_PHONG_BAN.upsert({
-        where: { TEN_PB: payload.PHONGBAN },
-        update: {},
-        create: { TEN_PB: payload.PHONGBAN },
-      });
-    }
 
     const updatedEmployee = await prisma.nHAN_VIEN.update({
       where: { MA_NV: id },

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Settings, Plus, Trash2, Edit2, Loader2, Info } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Plus, Trash2, Loader2, Info, Users, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -32,46 +31,73 @@ import {
 
 export function SettingsSheet() {
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("chuc-vu");
+
+  const menuItems = [
+    { id: "chuc-vu", label: "Chức vụ", icon: Users },
+    { id: "phong-ban", label: "Phòng ban", icon: Building2 },
+  ];
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-900 rounded-full h-9 w-9" title="Cài đặt danh mục">
           <Settings className="h-5 w-5" />
         </Button>
-      </SheetTrigger>
-      <SheetContent className="sm:max-w-md w-screen overflow-y-auto bg-slate-50 p-0" side="right">
-        <div className="sticky top-0 bg-white border-b px-6 py-4 z-10">
-          <SheetHeader>
-            <SheetTitle className="text-xl text-slate-800">Cài đặt danh mục</SheetTitle>
-            <SheetDescription>
-              Quản lý các danh mục động trên hệ thống (Chức vụ, Phòng ban,...)
-            </SheetDescription>
-          </SheetHeader>
-        </div>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-4xl p-0 h-[80vh] flex flex-col overflow-hidden bg-slate-50 gap-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Cài đặt danh mục</DialogTitle>
+          <DialogDescription>Quản lý các danh mục động trên hệ thống</DialogDescription>
+        </DialogHeader>
 
-        <div className="p-6">
-          <Tabs defaultValue="chuc-vu" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="chuc-vu">Chức vụ</TabsTrigger>
-              <TabsTrigger value="phong-ban">Phòng ban</TabsTrigger>
-            </TabsList>
-            <TabsContent value="chuc-vu" className="mt-0">
-              <ChucVuManager />
-            </TabsContent>
-            <TabsContent value="phong-ban" className="mt-0">
-              <PhongBanManager />
-            </TabsContent>
-          </Tabs>
+        <div className="flex-1 flex overflow-hidden">
+          {/* Sidebar */}
+          <div className="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+            <div className="p-6 pb-4 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800">Cài đặt</h2>
+              <p className="text-sm text-slate-500">Quản lý danh mục động</p>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-1">
+              {menuItems.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === item.id
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
+            <div className="max-w-2xl mx-auto">
+              <div className="mb-6">
+                <h3 className="text-2xl font-semibold text-slate-800">
+                  {menuItems.find(m => m.id === activeTab)?.label}
+                </h3>
+              </div>
+
+              {activeTab === "chuc-vu" && <ChucVuManager />}
+              {activeTab === "phong-ban" && <PhongBanManager />}
+            </div>
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 function ChucVuManager() {
   const [isPending, startTransition] = useTransition();
   const [items, setItems] = useState<any[]>([]);
+  const [newId, setNewId] = useState("");
   const [newValue, setNewValue] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -91,11 +117,15 @@ function ChucVuManager() {
   }, []);
 
   const handleAdd = async () => {
-    if (!newValue.trim()) return;
+    if (!newId.trim() || !newValue.trim()) {
+      toast.error("Vui lòng nhập cả Mã và Tên chức vụ");
+      return;
+    }
     startTransition(async () => {
-      const res = await addDanhMucChucVu(newValue);
+      const res = await addDanhMucChucVu(newId, newValue);
       if (res.success) {
         toast.success("Thêm thành công");
+        setNewId("");
         setNewValue("");
         fetchItems();
       } else {
@@ -130,14 +160,21 @@ function ChucVuManager() {
   return (
     <div className="space-y-4">
       <div className="flex gap-2 bg-white p-2 rounded-lg border shadow-sm">
-        <Input 
-          placeholder="Nhập tên chức vụ mới..." 
-          value={newValue} 
+        <Input
+          placeholder="ID"
+          value={newId}
+          onChange={e => setNewId(e.target.value.toUpperCase().replace(/\s/g, ''))}
+          className="w-28 border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none font-medium"
+        />
+        <div className="w-px bg-slate-200 shrink-0 my-1"></div>
+        <Input
+          placeholder="Tên chức vụ mới..."
+          value={newValue}
           onChange={e => setNewValue(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleAdd()}
           className="border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
         />
-        <Button onClick={handleAdd} disabled={isPending || !newValue.trim()} size="sm" className="shrink-0 rounded-md">
+        <Button onClick={handleAdd} disabled={isPending || !newId.trim() || !newValue.trim()} size="sm" className="shrink-0 rounded-md">
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
           Thêm
         </Button>
@@ -153,11 +190,12 @@ function ChucVuManager() {
             {items.map(item => (
               <li key={item.ID_CV} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
                 <span className={`font-medium ${!item.HIEU_LUC ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                  <span className="text-slate-400 mr-2">[{item.ID_CV}]</span>
                   {item.TEN_CV}
                 </span>
                 <div className="flex items-center gap-3">
-                  <Switch 
-                    checked={item.HIEU_LUC} 
+                  <Switch
+                    checked={item.HIEU_LUC}
                     onCheckedChange={(checked) => handleToggle(item.ID_CV, checked)}
                     disabled={isPending}
                     title="Ẩn/Hiện trong dropdown"
@@ -198,6 +236,7 @@ function ChucVuManager() {
 function PhongBanManager() {
   const [isPending, startTransition] = useTransition();
   const [items, setItems] = useState<any[]>([]);
+  const [newId, setNewId] = useState("");
   const [newValue, setNewValue] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -217,11 +256,15 @@ function PhongBanManager() {
   }, []);
 
   const handleAdd = async () => {
-    if (!newValue.trim()) return;
+    if (!newId.trim() || !newValue.trim()) {
+      toast.error("Vui lòng nhập cả Mã và Tên phòng ban");
+      return;
+    }
     startTransition(async () => {
-      const res = await addDanhMucPhongBan(newValue);
+      const res = await addDanhMucPhongBan(newId, newValue);
       if (res.success) {
         toast.success("Thêm thành công");
+        setNewId("");
         setNewValue("");
         fetchItems();
       } else {
@@ -256,14 +299,21 @@ function PhongBanManager() {
   return (
     <div className="space-y-4">
       <div className="flex gap-2 bg-white p-2 rounded-lg border shadow-sm">
-        <Input 
-          placeholder="Nhập tên phòng ban mới..." 
-          value={newValue} 
+        <Input
+          placeholder="ID"
+          value={newId}
+          onChange={e => setNewId(e.target.value.toUpperCase().replace(/\s/g, ''))}
+          className="w-28 border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none font-medium"
+        />
+        <div className="w-px bg-slate-200 shrink-0 my-1"></div>
+        <Input
+          placeholder="Tên phòng ban mới..."
+          value={newValue}
           onChange={e => setNewValue(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleAdd()}
           className="border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
         />
-        <Button onClick={handleAdd} disabled={isPending || !newValue.trim()} size="sm" className="shrink-0 rounded-md">
+        <Button onClick={handleAdd} disabled={isPending || !newId.trim() || !newValue.trim()} size="sm" className="shrink-0 rounded-md">
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
           Thêm
         </Button>
@@ -279,11 +329,12 @@ function PhongBanManager() {
             {items.map(item => (
               <li key={item.ID_PB} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
                 <span className={`font-medium ${!item.HIEU_LUC ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                  <span className="text-slate-400 mr-2">[{item.ID_PB}]</span>
                   {item.TEN_PB}
                 </span>
                 <div className="flex items-center gap-3">
-                  <Switch 
-                    checked={item.HIEU_LUC} 
+                  <Switch
+                    checked={item.HIEU_LUC}
                     onCheckedChange={(checked) => handleToggle(item.ID_PB, checked)}
                     disabled={isPending}
                     title="Ẩn/Hiện trong dropdown"

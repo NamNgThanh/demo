@@ -15,14 +15,14 @@ export async function getDanhMucChucVu() {
   }
 }
 
-export async function addDanhMucChucVu(tenCv: string) {
+export async function addDanhMucChucVu(idCv: string, tenCv: string) {
   try {
     const data = await prisma.dANH_MUC_CHUC_VU.create({
-      data: { TEN_CV: tenCv.trim() }
+      data: { ID_CV: idCv.trim().toUpperCase(), TEN_CV: tenCv.trim() }
     });
     return createSuccessResponse(data);
   } catch (error) {
-    return createErrorResponse("Lỗi khi thêm danh mục chức vụ (có thể đã tồn tại)", error);
+    return createErrorResponse("Lỗi khi thêm (Mã hoặc tên chức vụ đã tồn tại)", error);
   }
 }
 
@@ -61,14 +61,14 @@ export async function getDanhMucPhongBan() {
   }
 }
 
-export async function addDanhMucPhongBan(tenPb: string) {
+export async function addDanhMucPhongBan(idPb: string, tenPb: string) {
   try {
     const data = await prisma.dANH_MUC_PHONG_BAN.create({
-      data: { TEN_PB: tenPb.trim() }
+      data: { ID_PB: idPb.trim().toUpperCase(), TEN_PB: tenPb.trim() }
     });
     return createSuccessResponse(data);
   } catch (error) {
-    return createErrorResponse("Lỗi khi thêm danh mục phòng ban (có thể đã tồn tại)", error);
+    return createErrorResponse("Lỗi khi thêm (Mã hoặc tên phòng ban đã tồn tại)", error);
   }
 }
 

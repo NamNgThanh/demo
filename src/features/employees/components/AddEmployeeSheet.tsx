@@ -175,7 +175,7 @@ export function AddEmployeeSheet({ open, onOpenChange, onSuccess }: AddEmployeeS
               >
                 <TabsList className="grid w-full grid-cols-3 mb-6 sticky top-0 z-10 bg-white shadow-sm border">
                   <TabsTrigger value="general">Thông tin chung</TabsTrigger>
-                  <TabsTrigger value="job">Công việc</TabsTrigger>
+                  <TabsTrigger value="job">Chức vụ & Phòng ban</TabsTrigger>
                   <TabsTrigger value="account">Tài khoản</TabsTrigger>
                 </TabsList>
 

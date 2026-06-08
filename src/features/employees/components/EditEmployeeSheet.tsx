@@ -209,7 +209,7 @@ export function EditEmployeeSheet({ open, onOpenChange, onSuccess, employee, isA
               >
                 <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-10 bg-white shadow-sm border">
                   <TabsTrigger value="general">Thông tin chung</TabsTrigger>
-                  <TabsTrigger value="job">Công việc</TabsTrigger>
+                  <TabsTrigger value="job">Chức vụ & Phòng ban</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general" className="space-y-6 bg-white p-4 rounded-lg border shadow-sm mt-0">

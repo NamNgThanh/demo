@@ -37,13 +37,13 @@ enum HINH_THUC_LAM_VIEC {
 }
 
 model DANH_MUC_CHUC_VU {
-  ID_CV    String  @id @default(auto()) @map("_id") @db.ObjectId
+  ID_CV    String  @id @map("_id")
   TEN_CV   String  @unique
   HIEU_LUC Boolean @default(true)
 }
 
 model DANH_MUC_PHONG_BAN {
-  ID_PB    String  @id @default(auto()) @map("_id") @db.ObjectId
+  ID_PB    String  @id @map("_id")
   TEN_PB   String  @unique
   HIEU_LUC Boolean @default(true)
 }
@@ -54,7 +54,7 @@ model NGUOI_DUNG {
   MAT_KHAU      String
   QUYEN         QUYEN  @default(USER)
 
-  NHAN_VIEN     NHAN_VIEN[]
+  NHAN_VIEN NHAN_VIEN[]
 }
 
 model NHAN_VIEN {
