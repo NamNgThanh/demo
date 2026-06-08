@@ -9,6 +9,7 @@ import { UserCheck, UserX } from "lucide-react";
 
 export const getColumns = (
   onOpenDetail: (employee: EmployeePublic) => void,
+  isAdmin: boolean
 ): ColumnDef<EmployeePublic>[] => [
     {
       id: "code",
@@ -214,7 +215,7 @@ export const getColumns = (
       id: "actions",
       enableSorting: false,
       cell: ({ row }) => (
-        <ActionsCell employee={row.original} onOpenDetail={onOpenDetail} />
+        <ActionsCell employee={row.original} onOpenDetail={onOpenDetail} isAdmin={isAdmin} />
       ),
     },
   ];

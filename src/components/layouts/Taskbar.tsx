@@ -9,10 +9,12 @@ import { Button } from "../ui/button";
 import { Bell } from "lucide-react";
 import { InfoDropdown } from "./InfoDropdown";
 import { useSession } from "next-auth/react";
+import { SettingsSheet } from "./SettingsSheet";
 
 export const AppTaskbar = () => {
   const pathname = usePathname();
   const session = useSession();
+  const isAdmin = session.data?.user?.role === "ADMIN";
 
   const renderBreadcrumb = () => {
     if (pathname === "/" || pathname === "/") {
@@ -59,6 +61,8 @@ export const AppTaskbar = () => {
             <Bell className="h-5 w-5 text-slate-600" />
             <span className="absolute top-2 right-2 flex h-2 w-2 items-center justify-center rounded-full bg-red-500 ring-2 ring-white"></span>
           </Button>
+
+          {isAdmin && <SettingsSheet />}
 
           <InfoDropdown user={session.data?.user}/>
 

@@ -18,7 +18,6 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ChevronRight, LayoutDashboard, Package } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
-import { SettingsSheet } from "./SettingsSheet";
 
 interface AppSidebarProps {
   isAdmin: boolean;
@@ -93,11 +92,6 @@ export const AppSidebar = ({ isAdmin }: AppSidebarProps) => {
             </span>
           </div>
         </Link>
-        {isAdmin && (
-          <div className="group-data-[collapsible=icon]:hidden shrink-0">
-            <SettingsSheet />
-          </div>
-        )}
       </SidebarHeader>
 
       <SidebarContent className="p-3 gap-0">

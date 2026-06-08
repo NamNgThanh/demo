@@ -4,7 +4,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { EmployeePublic } from "../action";
-import { Pencil, Trash2, UserMinus } from "lucide-react";
+import { Eye, Pencil, Trash2, UserMinus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { deleteEmployee, terminateEmployee } from "../action";
@@ -12,9 +12,11 @@ import { deleteEmployee, terminateEmployee } from "../action";
 export const ActionsCell = ({
   employee,
   onOpenDetail,
+  isAdmin,
 }: {
   employee: EmployeePublic,
   onOpenDetail: (employee: EmployeePublic) => void,
+  isAdmin: boolean,
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -75,16 +77,16 @@ export const ActionsCell = ({
                   onOpenDetail(employee);
                 }}
               >
-                <Pencil className="h-4 w-4" />
+                {isAdmin ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Thay đổi thông tin</p>
+              <p>{isAdmin ? "Thay đổi thông tin" : "Xem chi tiết"}</p>
             </TooltipContent>
           </Tooltip>
         )}
 
-        {employee.TRANG_THAI !== "NGHI_VIEC" && (
+        {isAdmin && employee.TRANG_THAI !== "NGHI_VIEC" && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -104,8 +106,10 @@ export const ActionsCell = ({
             </TooltipContent>
           </Tooltip>
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
+        
+        {isAdmin && (
+          <Tooltip>
+            <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
@@ -122,6 +126,7 @@ export const ActionsCell = ({
             <p>Xóa nhân viên</p>
           </TooltipContent>
         </Tooltip>
+        )}
 
       </div>
 

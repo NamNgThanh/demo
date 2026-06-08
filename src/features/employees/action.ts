@@ -6,6 +6,7 @@ import { createErrorResponse, createSuccessResponse, ResultResponse } from "@/ty
 import { Prisma } from "@prisma/client";
 import { EmployeeFormData, UpdateEmployeeFormData } from "./schema";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
 
 const EMPLOYEES_PATH = "/employees";
 
@@ -97,6 +98,8 @@ export const createEmployee = async (
   employeeData: EmployeeFormData
 ): Promise<ResultResponse<EmployeePublic>> => {
   try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
     const payload = await buildCreatePayload(employeeData);
 
     // Lưu danh mục mới nếu cần
@@ -168,6 +171,8 @@ export const updateEmployee = async (
   employeeData: UpdateEmployeeFormData
 ): Promise<ResultResponse<EmployeePublic>> => {
   try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
     const { NGAY_NHAN_VIEC, ...data } = employeeData;
 
     const payload = {
@@ -213,6 +218,8 @@ export const updateEmployee = async (
 
 export const deleteEmployee = async (id: string): Promise<ResultResponse<null>> => {
   try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
     await prisma.nHAN_VIEN.delete({
       where: {
         MA_NV: id,
@@ -227,6 +234,8 @@ export const deleteEmployee = async (id: string): Promise<ResultResponse<null>> 
 
 export const terminateEmployee = async (id: string): Promise<ResultResponse<null>> => {
   try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
     await prisma.nHAN_VIEN.update({
       where: {
         MA_NV: id,

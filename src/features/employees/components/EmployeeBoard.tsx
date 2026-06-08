@@ -19,9 +19,10 @@ interface EmployeeBoardProps {
   initialData: EmployeePublic[];
   counts: Record<string, number>;
   currentStatus: string;
+  isAdmin: boolean;
 }
 
-export const EmployeeBoard = ({ initialData, counts, currentStatus }: EmployeeBoardProps) => {
+export const EmployeeBoard = ({ initialData, counts, currentStatus, isAdmin }: EmployeeBoardProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -71,8 +72,8 @@ export const EmployeeBoard = ({ initialData, counts, currentStatus }: EmployeeBo
     return getColumns((employee) => {
       setSelectedEmployee(employee);
       setIsDetailOpen(true);
-    });
-  }, []);
+    }, isAdmin);
+  }, [isAdmin]);
 
   const filterOptions: FilterOption[] = useMemo(() => [
     { value: "TAT_CA", label: "Tất cả", count: counts.TAT_CA, icon: Users, color: "blue" },
@@ -204,6 +205,7 @@ export const EmployeeBoard = ({ initialData, counts, currentStatus }: EmployeeBo
         open={isDetailOpen} 
         onOpenChange={setIsDetailOpen} 
         employee={selectedEmployee} 
+        isAdmin={isAdmin}
       />
     </>
   )

@@ -4,12 +4,15 @@ import { NHAN_VIEN, TRANG_THAI_LAM_VIEC } from "@prisma/client";
 import { getAllEmployees } from "@/features/employees/action";
 import { EmployeeBoard } from "@/features/employees/components/EmployeeBoard";
 import { AddEmployeeButton } from "@/features/employees/components/AddEmployeeButton";
+import { auth } from "@/lib/auth";
 
 interface EmployeesPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function EmployeesPage({ searchParams }: EmployeesPageProps) {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
   const resolvedParams = await searchParams;
 
   const currentStatus = (resolvedParams.status as TRANG_THAI_LAM_VIEC | "TAT_CA") || "TAT_CA";
@@ -28,14 +31,16 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
   const allEmployees = result.data || [];
 
   const counts = {
-    TAT_CA: allEmployees.length,
+    TAT_CA: allEmployees.filter((e: NHAN_VIEN) => e.TRANG_THAI !== "NGHI_VIEC").length,
     DANG_LAM_VIEC: allEmployees.filter((e: NHAN_VIEN) => e.TRANG_THAI === "DANG_LAM_VIEC").length,
     THU_VIEC: allEmployees.filter((e: NHAN_VIEN) => e.TRANG_THAI === "THU_VIEC").length,
     NGHI_VIEC: allEmployees.filter((e: NHAN_VIEN) => e.TRANG_THAI === "NGHI_VIEC").length,
   };
 
   const filteredEmployees = allEmployees.filter((e: NHAN_VIEN) => {
-    const matchesStatus = currentStatus === "TAT_CA" || e.TRANG_THAI === currentStatus;
+    const matchesStatus = currentStatus === "TAT_CA" 
+      ? e.TRANG_THAI !== "NGHI_VIEC"
+      : e.TRANG_THAI === currentStatus;
 
     const matchesSearch =
       e.HO_VA_TEN.toLowerCase().includes(currentSearch) ||
@@ -55,13 +60,14 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
           iconClassName="w-10 h-10 text-yellow-700"
           titleGradientClassName="from-yellow-900 to-yellow-700"
         />
-        <AddEmployeeButton />
+        {isAdmin && <AddEmployeeButton />}
       </div>
 
       <EmployeeBoard 
         initialData={filteredEmployees} 
         counts={counts} 
         currentStatus={currentStatus} 
+        isAdmin={isAdmin}
       />
     </div>
   );

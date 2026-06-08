@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Info } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useEffect, useState, useTransition } from "react";
@@ -40,9 +40,10 @@ interface EditEmployeeSheetProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   employee: EmployeePublic | null;
+  isAdmin?: boolean;
 }
 
-export function EditEmployeeSheet({ open, onOpenChange, onSuccess, employee }: EditEmployeeSheetProps) {
+export function EditEmployeeSheet({ open, onOpenChange, onSuccess, employee, isAdmin = true }: EditEmployeeSheetProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -172,11 +173,22 @@ export function EditEmployeeSheet({ open, onOpenChange, onSuccess, employee }: E
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] p-0 flex flex-col h-[90vh] bg-slate-50 overflow-hidden">
         <DialogHeader className="px-6 py-4 bg-white border-b shrink-0">
-          <DialogTitle>Sửa thông tin nhân viên</DialogTitle>
+          <DialogTitle>{isAdmin ? "Sửa thông tin nhân viên" : "Chi tiết nhân viên"}</DialogTitle>
           <DialogDescription>
-            Cập nhật thông tin chi tiết cho nhân viên {employee?.HO_VA_TEN}.
+            {isAdmin 
+              ? `Cập nhật thông tin chi tiết cho nhân viên ${employee?.HO_VA_TEN}.`
+              : `Xem thông tin chi tiết của nhân viên ${employee?.HO_VA_TEN}.`}
           </DialogDescription>
         </DialogHeader>
+
+        {!isAdmin && (
+          <div className="bg-blue-50 border-b border-blue-100 p-3 px-6 flex items-start gap-3">
+            <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-700">
+              Bạn đang ở chế độ xem. Chỉ có tài khoản Quản trị viên mới được phép chỉnh sửa thông tin.
+            </p>
+          </div>
+        )}
 
         <Form {...form}>
           <form
@@ -609,16 +621,18 @@ export function EditEmployeeSheet({ open, onOpenChange, onSuccess, employee }: E
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
-                Hủy
+                {isAdmin ? "Hủy" : "Đóng"}
               </Button>
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="bg-blue-600 hover:bg-blue-700 min-w-30"
-              >
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isPending ? "Đang lưu..." : "Lưu hồ sơ"}
-              </Button>
+              {isAdmin && (
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="bg-blue-600 hover:bg-blue-700 min-w-30"
+                >
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isPending ? "Đang lưu..." : "Lưu hồ sơ"}
+                </Button>
+              )}
             </div>
           </form>
         </Form>
