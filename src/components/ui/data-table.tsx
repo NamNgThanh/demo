@@ -171,7 +171,10 @@ export function DataTable<TData, TValue>({
                         "hover:bg-[#7C3AED]/5",
                         rowClassName
                       )}
-                      onClick={() => onRowClick?.(row.original)}
+                      onClick={() => {
+                        if (onRowClick) onRowClick(row.original);
+                        if (renderSubComponent) row.toggleExpanded();
+                      }}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="py-4 align-middle whitespace-nowrap min-w-max">

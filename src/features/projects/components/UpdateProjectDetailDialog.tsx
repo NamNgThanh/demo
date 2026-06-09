@@ -86,6 +86,7 @@ export function UpdateProjectDetailDialog({ open, onOpenChange, item }: UpdatePr
         NV_PHU_TRACH_ID: item.NV_PHU_TRACH_ID || "unassigned", // Use "unassigned" to bypass Select empty issue
         nvHoTroIds: item.nvHoTroIds || [],
         LEADER_ID: item.LEADER_ID || "unassigned",
+        TINH_TRANG: item.TINH_TRANG || "Chưa phân bổ",
         DEADLINE: item.DEADLINE ? new Date(item.DEADLINE).toISOString().split('T')[0] : "",
         TREO_THUONG_SO_TIEN: item.TREO_THUONG_SO_TIEN || 0,
         TREO_THUONG_THOI_HAN: item.TREO_THUONG_THOI_HAN ? new Date(item.TREO_THUONG_THOI_HAN).toISOString().split('T')[0] : "",
@@ -171,135 +172,166 @@ export function UpdateProjectDetailDialog({ open, onOpenChange, item }: UpdatePr
                     </div>
 
                     {/* TAB PHÂN BỔ */}
-                    <div className={`${activeTab === "phan-bo" ? "block" : "hidden"} space-y-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm`}>
-                      <div className="grid grid-cols-2 gap-6">
+                    <div className={`${activeTab === "phan-bo" ? "block" : "hidden"} space-y-4`}>
+                      <div className="bg-white p-4 rounded-lg border shadow-sm">
                         <FormField
                           control={form.control}
-                          name="EMAIL_SO_HUU"
+                          name="TINH_TRANG"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-slate-600">Email sở hữu</FormLabel>
-                              <FormControl>
-                                <Input className="bg-slate-50" placeholder="example@gmail.com" type="email" {...field} value={field.value || ""} />
-                              </FormControl>
+                              <FormLabel className="text-slate-600 font-semibold">Tình trạng hạng mục</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || "Chưa phân bổ"}>
+                                <FormControl>
+                                  <SelectTrigger className="bg-slate-50 border-slate-200">
+                                    <SelectValue placeholder="Chọn tình trạng..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Chưa phân bổ">Chưa phân bổ</SelectItem>
+                                  <SelectItem value="Chưa triển khai">Chưa triển khai</SelectItem>
+                                  <SelectItem value="Đang triển khai">Đang triển khai</SelectItem>
+                                  <SelectItem value="Chờ nghiệm thu">Chờ nghiệm thu</SelectItem>
+                                  <SelectItem value="Nghiệm thu">Nghiệm thu</SelectItem>
+                                  <SelectItem value="Hoãn">Hoãn</SelectItem>
+                                  <SelectItem value="Huỷ">Huỷ</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                      </div>
 
-                        <FormField
-                          control={form.control}
-                          name="DEADLINE"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel className="text-slate-600">Deadline</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
+                      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                        <div className="grid grid-cols-2 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="EMAIL_SO_HUU"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600">Email sở hữu</FormLabel>
+                                <FormControl>
+                                  <Input className="bg-slate-50" placeholder="example@gmail.com" type="email" {...field} value={field.value || ""} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="DEADLINE"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel className="text-slate-600">Deadline</FormLabel>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant="outline"
+                                        className={cn("pl-3 text-left font-normal bg-slate-50", !field.value && "text-muted-foreground")}
+                                      >
+                                        {field.value ? format(new Date(field.value), "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(d) => field.onChange(d ? format(d, "yyyy-MM-dd") : "")} />
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="NV_PHU_TRACH_ID"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600">Nhân sự phụ trách chính</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value || "unassigned"}>
                                   <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className={cn("pl-3 text-left font-normal bg-slate-50", !field.value && "text-muted-foreground")}
-                                    >
-                                      {field.value ? format(new Date(field.value), "dd/MM/yyyy") : <span>Chọn ngày</span>}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
+                                    <SelectTrigger className="bg-slate-50">
+                                      <SelectValue placeholder="Chọn người phụ trách" />
+                                    </SelectTrigger>
                                   </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(d) => field.onChange(d ? format(d, "yyyy-MM-dd") : "")} />
-                                </PopoverContent>
-                              </Popover>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="NV_PHU_TRACH_ID"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-600">Nhân sự phụ trách chính</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || "unassigned"}>
-                                <FormControl>
-                                  <SelectTrigger className="bg-slate-50">
-                                    <SelectValue placeholder="Chọn người phụ trách" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="unassigned">-- Chưa chọn --</SelectItem>
-                                  {nhanVienList.map((nv) => (
-                                    <SelectItem key={nv.ID_NHAN_VIEN} value={nv.ID_NHAN_VIEN}>
-                                      {nv.HO_VA_TEN}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="LEADER_ID"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-600">Leader / Quản lý</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || "unassigned"}>
-                                <FormControl>
-                                  <SelectTrigger className="bg-slate-50">
-                                    <SelectValue placeholder="Chọn Leader" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="unassigned">-- Chưa chọn --</SelectItem>
-                                  {nhanVienList.map((nv) => (
-                                    <SelectItem key={nv.ID_NHAN_VIEN} value={nv.ID_NHAN_VIEN}>
-                                      {nv.HO_VA_TEN}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="nvHoTroIds"
-                          render={({ field }) => (
-                            <FormItem className="col-span-2">
-                              <FormLabel className="text-slate-600">Nhân sự hỗ trợ (Chọn nhiều)</FormLabel>
-                              <FormControl>
-                                <ScrollArea className="h-[200px] border rounded-xl p-4 bg-slate-50/50 shadow-inner">
-                                  <div className="grid grid-cols-2 gap-3">
+                                  <SelectContent>
+                                    <SelectItem value="unassigned">-- Chưa chọn --</SelectItem>
                                     {nhanVienList.map((nv) => (
-                                      <div key={nv.ID_NHAN_VIEN} className="flex items-center space-x-2 bg-white p-3 border rounded-lg shadow-sm hover:border-blue-200 transition-colors">
-                                        <Checkbox
-                                          id={`hotro-${nv.ID_NHAN_VIEN}`}
-                                          checked={field.value?.includes(nv.ID_NHAN_VIEN)}
-                                          onCheckedChange={(checked) => {
-                                            const current = field.value || [];
-                                            const updated = checked
-                                              ? [...current, nv.ID_NHAN_VIEN]
-                                              : current.filter((id) => id !== nv.ID_NHAN_VIEN);
-                                            field.onChange(updated);
-                                          }}
-                                        />
-                                        <label htmlFor={`hotro-${nv.ID_NHAN_VIEN}`} className="text-sm font-medium cursor-pointer flex-1">
-                                          {nv.HO_VA_TEN}
-                                        </label>
-                                      </div>
+                                      <SelectItem key={nv.ID_NHAN_VIEN} value={nv.ID_NHAN_VIEN}>
+                                        {nv.HO_VA_TEN}
+                                      </SelectItem>
                                     ))}
-                                  </div>
-                                </ScrollArea>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="LEADER_ID"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600">Leader / Quản lý</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value || "unassigned"}>
+                                  <FormControl>
+                                    <SelectTrigger className="bg-slate-50">
+                                      <SelectValue placeholder="Chọn Leader" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="unassigned">-- Chưa chọn --</SelectItem>
+                                    {nhanVienList.map((nv) => (
+                                      <SelectItem key={nv.ID_NHAN_VIEN} value={nv.ID_NHAN_VIEN}>
+                                        {nv.HO_VA_TEN}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="nvHoTroIds"
+                            render={({ field }) => (
+                              <FormItem className="col-span-2">
+                                <FormLabel className="text-slate-600">Nhân sự hỗ trợ (Chọn nhiều)</FormLabel>
+                                <FormControl>
+                                  <ScrollArea className="h-[200px] border rounded-xl p-4 bg-slate-50/50 shadow-inner">
+                                    <div className="grid grid-cols-2 gap-3">
+                                      {nhanVienList.map((nv) => (
+                                        <div key={nv.ID_NHAN_VIEN} className="flex items-center space-x-2 bg-white p-3 border rounded-lg shadow-sm hover:border-blue-200 transition-colors">
+                                          <Checkbox
+                                            id={`hotro-${nv.ID_NHAN_VIEN}`}
+                                            checked={field.value?.includes(nv.ID_NHAN_VIEN)}
+                                            onCheckedChange={(checked) => {
+                                              const current = field.value || [];
+                                              const updated = checked
+                                                ? [...current, nv.ID_NHAN_VIEN]
+                                                : current.filter((id) => id !== nv.ID_NHAN_VIEN);
+                                              field.onChange(updated);
+                                            }}
+                                          />
+                                          <label htmlFor={`hotro-${nv.ID_NHAN_VIEN}`} className="text-sm font-medium cursor-pointer flex-1">
+                                            {nv.HO_VA_TEN}
+                                          </label>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </ScrollArea>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
                     </div>
 

@@ -159,23 +159,13 @@ export const getProjects = async (): Promise<ResultResponse<any[]>> => {
     const computedProjects = projects.map(project => {
       
       const computedDetails = project.DS_DU_AN_CT.map(detail => {
-        // Cột ảo: TINH_TRANG
-        let tinhTrang = "Đang triển khai";
-        if (!detail.PHAN_BO_ID && !detail.NV_PHU_TRACH_ID) {
-          tinhTrang = "Chưa phân bổ";
-        } else if (currentDate < project.NGAY_DK_BAT_DAU) {
-          tinhTrang = "Chưa triển khai";
-        } else if (currentDate > project.NGAY_DK_HOAN_THANH) {
-          tinhTrang = "Quá hạn";
-        }
-
         // Cột hiển thị UI (Tính toán từ các trường thật)
         const phanBoStr = detail.NV_PHU_TRACH_REL?.HO_VA_TEN || detail.PHAN_BO_REL?.HO_VA_TEN || "Chưa phân bổ";
         const thucTe = "";
 
         return {
           ...detail,
-          TINH_TRANG: tinhTrang,
+          TINH_TRANG: detail.TINH_TRANG || "Chưa phân bổ",
           PHAN_BO: phanBoStr,
           THUC_TE: thucTe,
           DEADLINE: detail.DEADLINE 
@@ -250,6 +240,7 @@ export const updateProjectDetailInfo = async (data: any): Promise<ResultResponse
       nvHoTroIds,
       LEADER_ID,
       DEADLINE,
+      TINH_TRANG,
       TREO_THUONG_SO_TIEN,
       TREO_THUONG_THOI_HAN,
       BANG_CHUNG,
@@ -265,6 +256,7 @@ export const updateProjectDetailInfo = async (data: any): Promise<ResultResponse
         nvHoTroIds: nvHoTroIds || [],
         LEADER_ID: LEADER_ID || null,
         DEADLINE: DEADLINE ? new Date(DEADLINE) : null,
+        TINH_TRANG: TINH_TRANG || "Chưa phân bổ",
         TREO_THUONG_SO_TIEN: TREO_THUONG_SO_TIEN || null,
         TREO_THUONG_THOI_HAN: TREO_THUONG_THOI_HAN ? new Date(TREO_THUONG_THOI_HAN) : null,
         BANG_CHUNG: BANG_CHUNG || [],

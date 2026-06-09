@@ -4,7 +4,8 @@ import { Project, ProjectDetail } from "../types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2 } from "lucide-react";
+import { Eye, Edit, Trash2, ExternalLink } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ProjectItemDetailDialog } from "./ProjectItemDetailDialog";
@@ -67,6 +68,7 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
               <TableHead className="font-semibold text-slate-700">Deadline</TableHead>
               <TableHead className="text-right font-semibold text-slate-700">Treo Thưởng</TableHead>
               <TableHead className="text-right font-semibold text-slate-700">Tiến Độ</TableHead>
+              <TableHead className="text-center font-semibold text-slate-700">Bằng Chứng</TableHead>
               <TableHead className="font-semibold text-slate-700">Tình Trạng</TableHead>
               <TableHead className="w-[120px]"></TableHead>
             </TableRow>
@@ -96,8 +98,47 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
                     </div>
                   </div>
                 </TableCell>
+                <TableCell className="text-center">
+                  {(!detail.BANG_CHUNG || detail.BANG_CHUNG.length === 0) ? (
+                    <span className="text-xs text-slate-400">-</span>
+                  ) : (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-6 px-2.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-full text-xs font-medium" onClick={(e) => e.stopPropagation()}>
+                          {detail.BANG_CHUNG.length} links
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-4" align="center" onClick={(e) => e.stopPropagation()}>
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-sm text-slate-800 border-b pb-2">Danh sách Bằng chứng</h4>
+                          <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-2">
+                            {detail.BANG_CHUNG.map((bc: any, i: number) => (
+                              <div key={i} className="flex flex-col text-sm bg-slate-50 p-2.5 rounded-md border border-slate-100">
+                                <span className="font-semibold text-slate-700">{bc.TEN_DANH_MUC}</span>
+                                <a href={bc.LINK} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center mt-1 truncate" title={bc.LINK}>
+                                  <ExternalLink className="h-3 w-3 mr-1 shrink-0" />
+                                  <span className="truncate">{bc.LINK}</span>
+                                </a>
+                                {bc.GHI_CHU && <span className="text-xs text-slate-500 mt-1.5 italic">{bc.GHI_CHU}</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="bg-slate-50">
+                  <Badge variant="outline" className={
+                    detail.TINH_TRANG === "Chưa phân bổ" ? "bg-slate-50 text-slate-500" :
+                    detail.TINH_TRANG === "Chưa triển khai" ? "bg-slate-100 text-slate-600" :
+                    detail.TINH_TRANG === "Đang triển khai" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                    detail.TINH_TRANG === "Chờ nghiệm thu" ? "bg-purple-50 text-purple-700 border-purple-200" :
+                    detail.TINH_TRANG === "Nghiệm thu" ? "bg-green-50 text-green-700 border-green-200" :
+                    detail.TINH_TRANG === "Hoãn" ? "bg-orange-50 text-orange-700 border-orange-200" :
+                    detail.TINH_TRANG === "Huỷ" ? "bg-red-50 text-red-700 border-red-200" :
+                    "bg-slate-50"
+                  }>
                     {detail.TINH_TRANG}
                   </Badge>
                 </TableCell>

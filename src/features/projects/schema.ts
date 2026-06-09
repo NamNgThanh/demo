@@ -28,6 +28,7 @@ export const updateProjectDetailSchema = z.object({
   nvHoTroIds: z.array(z.string()).optional(),
   LEADER_ID: z.string().nullable().optional(),
   DEADLINE: z.string().nullable().optional(),
+  TINH_TRANG: z.string().optional(),
   TREO_THUONG_SO_TIEN: z.number().nullable().optional(),
   TREO_THUONG_THOI_HAN: z.string().nullable().optional(),
   BANG_CHUNG: z.array(z.any()).optional(),

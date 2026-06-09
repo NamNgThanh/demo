@@ -210,6 +210,7 @@ model DS_DU_AN_CT {
   NHOM_DU_AN_REL NHOM_DU_AN @relation(fields: [ID_NHOM_DU_AN], references: [ID_NHOM_DU_AN])
 
   TEN_DU_AN_CT String
+  TINH_TRANG   String @default("Chưa phân bổ")
 
   ID_HANG_MUC  String      @db.ObjectId
   HANG_MUC_REL DS_HANG_MUC @relation(fields: [ID_HANG_MUC], references: [ID_HANG_MUC])
