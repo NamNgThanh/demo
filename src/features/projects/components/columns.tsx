@@ -2,9 +2,38 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Project } from "../types";
-import { ChevronDown, ChevronRight, FolderKanban } from "lucide-react";
+import { ChevronDown, ChevronRight, FolderKanban, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { AddProjectDetailDialog } from "./AddProjectDetailDialog";
+
+const ProjectActionCell = ({ project }: { project: Project }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+        title="Thêm hạng mục chi tiết"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(true);
+        }}
+      >
+        <Plus className="h-5 w-5" />
+      </Button>
+
+      <AddProjectDetailDialog
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        project={project}
+      />
+    </>
+  );
+};
 
 export const columns: ColumnDef<Project>[] = [
   {
@@ -91,4 +120,9 @@ export const columns: ColumnDef<Project>[] = [
       );
     }
   },
+  {
+    id: "ACTIONS",
+    header: "",
+    cell: ({ row }) => <ProjectActionCell project={row.original} />,
+  }
 ];

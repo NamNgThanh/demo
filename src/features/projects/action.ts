@@ -69,8 +69,16 @@ export const createProjectDetail = async (data: CreateProjectDetailInput): Promi
 
     const validatedData = createProjectDetailSchema.parse(data);
 
+    // Auto-generate ID_DU_AN_CT (VD: CT_VNG_PL01_1)
+    const count = await prisma.dS_DU_AN_CT.count({
+      where: { ID_DU_AN: validatedData.ID_DU_AN }
+    });
+    const shortParentId = validatedData.ID_DU_AN.replace(/^DA_\d{6}_/, ""); 
+    const idDuAnCt = `CT_${shortParentId}_${count + 1}`;
+
     const projectDetail = await prisma.dS_DU_AN_CT.create({
       data: {
+        ID_DU_AN_CT: idDuAnCt,
         ID_DU_AN: validatedData.ID_DU_AN,
         ID_NHOM_DU_AN: validatedData.ID_NHOM_DU_AN,
         TEN_DU_AN_CT: validatedData.TEN_DU_AN_CT,
@@ -174,5 +182,22 @@ export const getProjectFormOptions = async (): Promise<ResultResponse<any>> => {
   } catch (error: any) {
     console.error("Lỗi lấy danh mục form dự án:", error);
     return createErrorResponse("Lỗi lấy danh mục", error);
+  }
+}
+
+export const getProjectDetailFormOptions = async (): Promise<ResultResponse<any>> => {
+  try {
+    const [hangMuc, nhanVien] = await Promise.all([
+      prisma.dS_HANG_MUC.findMany({ where: { HIEU_LUC: true }, orderBy: { TEN_HANG_MUC: 'asc' } }),
+      prisma.nHAN_VIEN.findMany({ where: { TRANG_THAI: 'DANG_LAM_VIEC' }, orderBy: { HO_VA_TEN: 'asc' } })
+    ]);
+
+    return createSuccessResponse({
+      hangMuc,
+      nhanVien
+    });
+  } catch (error: any) {
+    console.error("Lỗi lấy danh mục form chi tiết dự án:", error);
+    return createErrorResponse("Lỗi lấy danh mục chi tiết", error);
   }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Settings, Plus, Trash2, Loader2, Info, Users, Building2, FolderKanban, Layers, FileText } from "lucide-react";
+import { Settings, Plus, Trash2, Loader2, Info, Users, Building2, FolderKanban, Layers, FileText, ListTodo } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -27,7 +27,11 @@ import {
   getDanhMucPhuLucHopDong,
   addDanhMucPhuLucHopDong,
   toggleDanhMucPhuLucHopDong,
-  deleteDanhMucPhuLucHopDong
+  deleteDanhMucPhuLucHopDong,
+  getDanhMucHangMuc,
+  addDanhMucHangMuc,
+  toggleDanhMucHangMuc,
+  deleteDanhMucHangMuc
 } from "@/app/actions/settings";
 import {
   AlertDialog,
@@ -52,6 +56,7 @@ export function SettingsSheet() {
     { id: "loai-du-an", label: "Loại dự án", icon: FolderKanban },
     { id: "nhom-du-an", label: "Nhóm dự án", icon: Layers },
     { id: "phu-luc-hop-dong", label: "Phụ lục hợp đồng", icon: FileText },
+    { id: "hang-muc", label: "Hạng mục (DS CT)", icon: ListTodo },
   ];
 
   return (
@@ -105,6 +110,7 @@ export function SettingsSheet() {
               {activeTab === "loai-du-an" && <LoaiDuAnManager />}
               {activeTab === "nhom-du-an" && <NhomDuAnManager />}
               {activeTab === "phu-luc-hop-dong" && <PhuLucHopDongManager />}
+              {activeTab === "hang-muc" && <HangMucManager />}
             </div>
           </div>
         </div>
@@ -809,6 +815,131 @@ function PhuLucHopDongManager() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Huỷ</AlertDialogCancel>
                         <AlertDialogAction onClick={() => handleDelete(item.ID_PLHD)} className="bg-red-600 hover:bg-red-700">Xoá</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HangMucManager() {
+  const [isPending, startTransition] = useTransition();
+  const [items, setItems] = useState<any[]>([]);
+  const [newValue, setNewValue] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchItems = async () => {
+    setLoading(true);
+    const res = await getDanhMucHangMuc();
+    if (res.success) {
+      if (res.data) setItems(res.data as any[]);
+    } else {
+      toast.error(res.error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const handleAdd = async () => {
+    if (!newValue.trim()) {
+      toast.error("Vui lòng nhập tên Hạng mục");
+      return;
+    }
+    startTransition(async () => {
+      const res = await addDanhMucHangMuc(newValue);
+      if (res.success) {
+        toast.success("Thêm thành công");
+        setNewValue("");
+        fetchItems();
+      } else {
+        toast.error(res.error);
+      }
+    });
+  };
+
+  const handleToggle = async (id: string, checked: boolean) => {
+    startTransition(async () => {
+      const res = await toggleDanhMucHangMuc(id, checked);
+      if (res.success) {
+        setItems(prev => prev.map(item => item.ID_HANG_MUC === id ? { ...item, HIEU_LUC: checked } : item));
+      } else {
+        toast.error(res.error);
+      }
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    startTransition(async () => {
+      const res = await deleteDanhMucHangMuc(id);
+      if (res.success) {
+        toast.success("Xoá thành công");
+        fetchItems();
+      } else {
+        toast.error(res.error);
+      }
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 bg-white p-2 rounded-lg border shadow-sm">
+        <Input
+          placeholder="Tên Hạng mục mới..."
+          value={newValue}
+          onChange={e => setNewValue(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleAdd()}
+          className="border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+        />
+        <Button onClick={handleAdd} disabled={isPending || !newValue.trim()} size="sm" className="shrink-0 rounded-md">
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+          Thêm
+        </Button>
+      </div>
+
+      <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
+        {loading ? (
+          <div className="p-8 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>
+        ) : items.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-sm">Chưa có dữ liệu</div>
+        ) : (
+          <ul className="divide-y">
+            {items.map(item => (
+              <li key={item.ID_HANG_MUC} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                <span className={`font-medium ${!item.HIEU_LUC ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                  {item.TEN_HANG_MUC}
+                </span>
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={item.HIEU_LUC}
+                    onCheckedChange={(checked) => handleToggle(item.ID_HANG_MUC, checked)}
+                    disabled={isPending}
+                    title="Ẩn/Hiện trong dropdown"
+                  />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50" disabled={isPending}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Xác nhận xoá?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Bạn có chắc muốn xoá <b>{item.TEN_HANG_MUC}</b> không? Hành động này không thể hoàn tác.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(item.ID_HANG_MUC)} className="bg-red-600 hover:bg-red-700">Xoá</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>

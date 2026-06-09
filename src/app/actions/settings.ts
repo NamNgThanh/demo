@@ -236,3 +236,49 @@ export async function deleteDanhMucPhuLucHopDong(id: string) {
   }
 }
 
+// Danh mục hạng mục
+export async function getDanhMucHangMuc() {
+  try {
+    const data = await prisma.dS_HANG_MUC.findMany({
+      orderBy: { TEN_HANG_MUC: 'asc' }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi lấy danh mục Hạng mục", error);
+  }
+}
+
+export async function addDanhMucHangMuc(ten: string) {
+  try {
+    const data = await prisma.dS_HANG_MUC.create({
+      data: { TEN_HANG_MUC: ten.trim() }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi thêm hạng mục", error);
+  }
+}
+
+export async function toggleDanhMucHangMuc(id: string, hieuLuc: boolean) {
+  try {
+    const data = await prisma.dS_HANG_MUC.update({
+      where: { ID_HANG_MUC: id },
+      data: { HIEU_LUC: hieuLuc }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi cập nhật trạng thái", error);
+  }
+}
+
+export async function deleteDanhMucHangMuc(id: string) {
+  try {
+    await prisma.dS_HANG_MUC.delete({
+      where: { ID_HANG_MUC: id }
+    });
+    return createSuccessResponse(null);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi xoá danh mục", error);
+  }
+}
+

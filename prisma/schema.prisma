@@ -186,7 +186,7 @@ model DS_HANG_MUC {
 }
 
 model DS_DU_AN_CT {
-  ID_DU_AN_CT String @id @default(auto()) @map("_id") @db.ObjectId
+  ID_DU_AN_CT String @id @map("_id")
 
   ID_DU_AN String
   DU_AN    DS_DU_AN @relation(fields: [ID_DU_AN], references: [ID_DU_AN])
