@@ -43,7 +43,7 @@ export interface Project {
   LOAI_DU_AN: { LOAI_DU_AN: string };
   ID_PLHD: string;
   DOI_TAC: string;
-  NHOM_DU_AN: { NHOM_DU_AN: string }[];
+  NHOM_DU_AN: { ID_NHOM_DU_AN: string; NHOM_DU_AN: string }[];
   NGAY_DK_BAT_DAU: Date;
   NGAY_DK_HOAN_THANH: Date;
   THUC_TE: string | null;
