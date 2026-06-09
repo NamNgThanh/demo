@@ -67,12 +67,11 @@ export default function LoginPage() {
               alt="WOWS HCNS Logo"
               className="h-16 w-auto"
             />
-            <Link
-              href="/"
-              className="font-bold tracking-tight text-3xl text-slate-900"
+            <div
+              className="font-bold tracking-tight text-3xl text-slate-900 cursor-default"
             >
               WOWS <span className="text-amber-600">HCNS</span>
-            </Link>
+            </div>
           </div>
 
           <div className="space-y-2 text-center">
