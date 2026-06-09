@@ -64,7 +64,7 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
               <TableHead className="w-[120px] font-semibold text-slate-700">Mã Chi Tiết</TableHead>
               <TableHead className="font-semibold text-slate-700">Tên Dự Án CT</TableHead>
               <TableHead className="font-semibold text-slate-700">Hạng Mục & Tỷ Trọng</TableHead>
-              <TableHead className="text-right font-semibold text-slate-700">Phân Bổ</TableHead>
+              <TableHead className="font-semibold text-slate-700">Phân Bổ</TableHead>
               <TableHead className="font-semibold text-slate-700">Deadline</TableHead>
               <TableHead className="text-right font-semibold text-slate-700">Treo Thưởng</TableHead>
               <TableHead className="text-right font-semibold text-slate-700">Tiến Độ</TableHead>
@@ -82,7 +82,7 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
                   <div className="text-slate-700 truncate" title={detail.DS_HANG_MUC}>{detail.DS_HANG_MUC}</div>
                   <div className="text-xs text-slate-500 font-medium mt-0.5">Tỷ trọng: {detail.TY_TRONG}%</div>
                 </TableCell>
-                <TableCell className="text-right">{detail.PHAN_BO}</TableCell>
+                <TableCell>{detail.PHAN_BO}</TableCell>
                 <TableCell>{detail.DEADLINE ? new Date(detail.DEADLINE).toLocaleDateString("vi-VN") : ""}</TableCell>
                 <TableCell className="text-right font-medium text-green-600">
                   {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(detail.TREO_THUONG_SO_TIEN || 0)}

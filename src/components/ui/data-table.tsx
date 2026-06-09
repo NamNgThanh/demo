@@ -120,12 +120,12 @@ export function DataTable<TData, TValue>({
                         {header.isPlaceholder ? null : (
                           <div
                             className={cn(
-                              "w-full h-full flex items-center justify-center group",
+                              "w-full h-full flex items-center group",
                               isSortable && "cursor-pointer select-none"
                             )}
                             onClick={header.column.getToggleSortingHandler()}
                           >
-                            <div className={cn("w-full flex justify-center", isSortable && "pr-6")}>
+                            <div className={cn("w-full flex", isSortable && "pr-6")}>
                               {flexRender(
                                 header.column.columnDef.header,
                                 header.getContext()
