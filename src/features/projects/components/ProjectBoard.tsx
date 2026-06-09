@@ -6,7 +6,7 @@ import { columns } from "./columns";
 import { ProjectDetailsSubTable } from "./ProjectDetailsSubTable";
 import { Project } from "../types";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar as CalendarIcon, X } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, X, Eye, EyeOff } from "lucide-react";
 import { AddProjectDialog } from "./AddProjectDialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -21,6 +21,7 @@ interface ProjectBoardProps {
 export const ProjectBoard = ({ initialData }: ProjectBoardProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [date, setDate] = useState<DateRange | undefined>(undefined);
+  const [showBlurred, setShowBlurred] = useState(true);
 
   const clearDateFilter = () => {
     setDate(undefined);
@@ -106,6 +107,16 @@ export const ProjectBoard = ({ initialData }: ProjectBoardProps) => {
             </Popover>
           </div>
 
+          <Button 
+            variant="outline" 
+            size="icon"
+            className="bg-white"
+            onClick={() => setShowBlurred(!showBlurred)}
+            title={showBlurred ? "Ẩn các hạng mục đã làm mờ" : "Hiện các hạng mục đã làm mờ"}
+          >
+            {showBlurred ? <Eye className="h-4 w-4 text-slate-600" /> : <EyeOff className="h-4 w-4 text-slate-400" />}
+          </Button>
+
           <Button onClick={() => setIsAddOpen(true)} className="bg-blue-600 hover:bg-blue-700 shadow-sm">
             <Plus className="w-4 h-4 mr-2" /> Thêm Dự Án
           </Button>
@@ -115,7 +126,7 @@ export const ProjectBoard = ({ initialData }: ProjectBoardProps) => {
       <DataTable
         columns={columns as any}
         data={filteredData}
-        renderSubComponent={({ row }) => <ProjectDetailsSubTable project={row.original} />}
+        renderSubComponent={({ row }) => <ProjectDetailsSubTable project={row.original} showBlurred={showBlurred} />}
         emptyState="Không có dự án nào."
       />
 

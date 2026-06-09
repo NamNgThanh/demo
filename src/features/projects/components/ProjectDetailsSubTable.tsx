@@ -4,13 +4,12 @@ import { Project, ProjectDetail } from "../types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, ExternalLink } from "lucide-react";
+import { Eye, EyeOff, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ProjectItemDetailDialog } from "./ProjectItemDetailDialog";
 import { UpdateProjectDetailDialog } from "./UpdateProjectDetailDialog";
-import { deleteProjectDetail } from "../action";
+import { deleteProjectDetail, toggleProjectDetailBlur } from "../action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,12 +23,12 @@ import {
 
 interface ProjectDetailsSubTableProps {
   project: Project;
+  showBlurred?: boolean;
 }
 
-export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps) {
+export function ProjectDetailsSubTable({ project, showBlurred = true }: ProjectDetailsSubTableProps) {
   const details = project.DS_DU_AN_CT;
   const [selectedDetail, setSelectedDetail] = useState<ProjectDetail | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -44,6 +43,17 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
         toast.error(res.error || "Có lỗi xảy ra");
       }
       setDeleteId(null);
+    });
+  };
+
+  const handleToggleBlur = (id: string, currentStatus: boolean) => {
+    startTransition(async () => {
+      const res = await toggleProjectDetailBlur(id, !currentStatus);
+      if (res.success) {
+        // UI updates automatically because of revalidatePath
+      } else {
+        toast.error(res.error || "Có lỗi xảy ra khi cập nhật trạng thái");
+      }
     });
   };
 
@@ -74,8 +84,11 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
             </TableRow>
           </TableHeader>
           <TableBody>
-            {details.map((detail) => (
-              <TableRow key={detail.ID_DU_AN_CT} className="hover:bg-slate-50/50">
+            {details.map((detail) => {
+              if (detail.IS_BLURRED && !showBlurred) return null;
+              
+              return (
+              <TableRow key={detail.ID_DU_AN_CT} className={`hover:bg-slate-50/50 ${detail.IS_BLURRED ? 'opacity-50 grayscale-[50%]' : ''}`}>
                 <TableCell className="font-medium text-slate-600">{detail.ID_DU_AN_CT}</TableCell>
                 <TableCell className="font-medium text-slate-900">{detail.TEN_DU_AN_CT}</TableCell>
                 <TableCell className="max-w-[200px]">
@@ -159,14 +172,12 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full"
-                      title="Xem chi tiết"
-                      onClick={() => {
-                        setSelectedDetail(detail);
-                        setIsDetailOpen(true);
-                      }}
+                      className={`h-8 w-8 rounded-full ${detail.IS_BLURRED ? 'text-slate-500 hover:text-slate-700 hover:bg-slate-200 bg-slate-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+                      title={detail.IS_BLURRED ? "Bỏ làm mờ" : "Làm mờ hạng mục"}
+                      onClick={() => handleToggleBlur(detail.ID_DU_AN_CT, detail.IS_BLURRED)}
+                      disabled={isPending}
                     >
-                      <Eye className="h-4 w-4" />
+                      {detail.IS_BLURRED ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -180,16 +191,10 @@ export function ProjectDetailsSubTable({ project }: ProjectDetailsSubTableProps)
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </div>
-
-      <ProjectItemDetailDialog 
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-        item={selectedDetail}
-      />
 
       <UpdateProjectDetailDialog
         open={isUpdateOpen}

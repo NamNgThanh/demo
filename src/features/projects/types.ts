@@ -8,6 +8,7 @@ export interface ProjectDetail {
   PHAN_BO: string;
   THUC_TE: string;
   TINH_TRANG: string;
+  IS_BLURRED: boolean;
   
   // Nhom Phan Bo
   EMAIL_SO_HUU: string | null;

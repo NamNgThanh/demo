@@ -307,3 +307,21 @@ export const deleteProject = async (id: string): Promise<ResultResponse<any>> =>
     return createErrorResponse(error.message || "Lỗi xoá dự án", error);
   }
 }
+
+export const toggleProjectDetailBlur = async (id: string, isBlurred: boolean): Promise<ResultResponse<any>> => {
+  try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
+
+    const updated = await prisma.dS_DU_AN_CT.update({
+      where: { ID_DU_AN_CT: id },
+      data: { IS_BLURRED: isBlurred }
+    });
+
+    revalidatePath(PROJECTS_PATH);
+    return createSuccessResponse(updated);
+  } catch (error: any) {
+    console.error("Lỗi cập nhật trạng thái làm mờ:", error);
+    return createErrorResponse(error.message || "Lỗi cập nhật trạng thái", error);
+  }
+}

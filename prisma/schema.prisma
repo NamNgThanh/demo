@@ -211,6 +211,7 @@ model DS_DU_AN_CT {
 
   TEN_DU_AN_CT String
   TINH_TRANG   String @default("Chưa phân bổ")
+  IS_BLURRED   Boolean @default(false)
 
   ID_HANG_MUC  String      @db.ObjectId
   HANG_MUC_REL DS_HANG_MUC @relation(fields: [ID_HANG_MUC], references: [ID_HANG_MUC])
