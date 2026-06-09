@@ -89,7 +89,116 @@ model NHAN_VIEN {
   NGAY_CHINH_THUC DateTime?
   NGAY_NGHI_VIEC  DateTime?
 
+  DS_DU_AN_CT DS_DU_AN_CT[]
+
   @@index([HO_VA_TEN])
   @@index([EMAIL])
   @@index([PHONGBAN])
+}
+
+model LOAI_DU_AN {
+  ID_LOAI_DU_AN String  @id @map("_id")
+  LOAI_DU_AN    String
+  HIEU_LUC      Boolean @default(true)
+
+  NHOM_DU_AN NHOM_DU_AN[]
+  DS_DU_AN   DS_DU_AN[]
+}
+
+model NHOM_DU_AN {
+  ID_NHOM_DU_AN  String     @id @map("_id")
+  ID_LOAI_DU_AN  String
+  LOAI_DU_AN_REL LOAI_DU_AN @relation(fields: [ID_LOAI_DU_AN], references: [ID_LOAI_DU_AN])
+
+  NHOM_DU_AN String
+  HIEU_LUC   Boolean @default(true)
+
+  LEVEL_DU_AN LEVEL_DU_AN[]
+  CONG_VIEC   CONG_VIEC[]
+
+  dsDuAnIds String[]
+  DS_DU_AN  DS_DU_AN[] @relation(fields: [dsDuAnIds], references: [ID_DU_AN])
+
+  DS_DU_AN_CT DS_DU_AN_CT[]
+}
+
+model LEVEL_DU_AN {
+  ID_LEVEL       String     @id @default(auto()) @map("_id") @db.ObjectId
+  ID_NHOM_DU_AN  String
+  NHOM_DU_AN_REL NHOM_DU_AN @relation(fields: [ID_NHOM_DU_AN], references: [ID_NHOM_DU_AN])
+
+  LEVEL         String
+  MUC_TU        Float
+  MUC_DEN       Float
+  DIEN_GIAI     String?
+  HE_SO         Float
+  DINH_MUC_NGAY Float
+  HIEU_LUC      Boolean @default(true)
+}
+
+model CONG_VIEC {
+  ID_CONG_VIEC   String     @id @map("_id")
+  ID_NHOM_DU_AN  String
+  NHOM_DU_AN_REL NHOM_DU_AN @relation(fields: [ID_NHOM_DU_AN], references: [ID_NHOM_DU_AN])
+
+  CONG_VIEC     String
+  CHI_TIET      String?
+  DINH_MUC_NGAY Float
+  HIEU_LUC      Boolean @default(true)
+}
+
+model PHU_LUC_HOP_DONG {
+  ID_PLHD              String  @id @map("_id")
+  TEN_DOI_TAC_VIET_TAT String
+  HIEU_LUC             Boolean @default(true)
+
+  DS_DU_AN DS_DU_AN[]
+}
+
+model DS_DU_AN {
+  ID_DU_AN   String   @id @map("_id")
+  NGAY_DU_AN DateTime
+
+  ID_LOAI_DU_AN String
+  LOAI_DU_AN    LOAI_DU_AN @relation(fields: [ID_LOAI_DU_AN], references: [ID_LOAI_DU_AN])
+
+  ID_PLHD String
+  PLHD    PHU_LUC_HOP_DONG @relation(fields: [ID_PLHD], references: [ID_PLHD])
+
+  DOI_TAC String
+
+  nhomDuAnIds String[]
+  NHOM_DU_AN  NHOM_DU_AN[] @relation(fields: [nhomDuAnIds], references: [ID_NHOM_DU_AN])
+
+  NGAY_DK_BAT_DAU    DateTime
+  NGAY_DK_HOAN_THANH DateTime
+  THUC_TE            String?
+
+  DS_DU_AN_CT DS_DU_AN_CT[]
+}
+
+model DS_HANG_MUC {
+  ID_HANG_MUC  String  @id @default(auto()) @map("_id") @db.ObjectId
+  TEN_HANG_MUC String
+  HIEU_LUC     Boolean @default(true)
+
+  DS_DU_AN_CT DS_DU_AN_CT[]
+}
+
+model DS_DU_AN_CT {
+  ID_DU_AN_CT String @id @default(auto()) @map("_id") @db.ObjectId
+
+  ID_DU_AN String
+  DU_AN    DS_DU_AN @relation(fields: [ID_DU_AN], references: [ID_DU_AN])
+
+  ID_NHOM_DU_AN  String
+  NHOM_DU_AN_REL NHOM_DU_AN @relation(fields: [ID_NHOM_DU_AN], references: [ID_NHOM_DU_AN])
+
+  TEN_DU_AN_CT String
+
+  ID_HANG_MUC  String      @db.ObjectId
+  HANG_MUC_REL DS_HANG_MUC @relation(fields: [ID_HANG_MUC], references: [ID_HANG_MUC])
+
+  PHAN_BO_ID  String?    @db.ObjectId
+  PHAN_BO_REL NHAN_VIEN? @relation(fields: [PHAN_BO_ID], references: [ID_NHAN_VIEN])
 }

@@ -95,3 +95,144 @@ export async function deleteDanhMucPhongBan(id: string) {
   }
 }
 
+// Loại dự án
+export async function getDanhMucLoaiDuAn() {
+  try {
+    const data = await prisma.lOAI_DU_AN.findMany({
+      orderBy: { LOAI_DU_AN: 'asc' }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi lấy danh mục Loại dự án", error);
+  }
+}
+
+export async function addDanhMucLoaiDuAn(id: string, ten: string) {
+  try {
+    const data = await prisma.lOAI_DU_AN.create({
+      data: { ID_LOAI_DU_AN: id.trim().toUpperCase(), LOAI_DU_AN: ten.trim() }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi thêm (Mã hoặc tên đã tồn tại)", error);
+  }
+}
+
+export async function toggleDanhMucLoaiDuAn(id: string, hieuLuc: boolean) {
+  try {
+    const data = await prisma.lOAI_DU_AN.update({
+      where: { ID_LOAI_DU_AN: id },
+      data: { HIEU_LUC: hieuLuc }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi cập nhật trạng thái", error);
+  }
+}
+
+export async function deleteDanhMucLoaiDuAn(id: string) {
+  try {
+    await prisma.lOAI_DU_AN.delete({
+      where: { ID_LOAI_DU_AN: id }
+    });
+    return createSuccessResponse(null);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi xoá danh mục Loại dự án", error);
+  }
+}
+
+// Nhóm dự án
+export async function getDanhMucNhomDuAn() {
+  try {
+    const data = await prisma.nHOM_DU_AN.findMany({
+      include: {
+        LOAI_DU_AN_REL: true
+      },
+      orderBy: { NHOM_DU_AN: 'asc' }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi lấy danh mục Nhóm dự án", error);
+  }
+}
+
+export async function addDanhMucNhomDuAn(id: string, ten: string, idLoai: string) {
+  try {
+    const data = await prisma.nHOM_DU_AN.create({
+      data: { ID_NHOM_DU_AN: id.trim().toUpperCase(), NHOM_DU_AN: ten.trim(), ID_LOAI_DU_AN: idLoai }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi thêm (Mã hoặc tên đã tồn tại)", error);
+  }
+}
+
+export async function toggleDanhMucNhomDuAn(id: string, hieuLuc: boolean) {
+  try {
+    const data = await prisma.nHOM_DU_AN.update({
+      where: { ID_NHOM_DU_AN: id },
+      data: { HIEU_LUC: hieuLuc }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi cập nhật trạng thái", error);
+  }
+}
+
+export async function deleteDanhMucNhomDuAn(id: string) {
+  try {
+    await prisma.nHOM_DU_AN.delete({
+      where: { ID_NHOM_DU_AN: id }
+    });
+    return createSuccessResponse(null);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi xoá danh mục Nhóm dự án", error);
+  }
+}
+
+// Phụ lục hợp đồng
+export async function getDanhMucPhuLucHopDong() {
+  try {
+    const data = await prisma.pHU_LUC_HOP_DONG.findMany({
+      orderBy: { ID_PLHD: 'asc' }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi lấy danh mục Phụ lục hợp đồng", error);
+  }
+}
+
+export async function addDanhMucPhuLucHopDong(id: string, tenDoiTac: string) {
+  try {
+    const data = await prisma.pHU_LUC_HOP_DONG.create({
+      data: { ID_PLHD: id.trim().toUpperCase(), TEN_DOI_TAC_VIET_TAT: tenDoiTac.trim().toUpperCase() }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi thêm (Mã đã tồn tại)", error);
+  }
+}
+
+export async function toggleDanhMucPhuLucHopDong(id: string, hieuLuc: boolean) {
+  try {
+    const data = await prisma.pHU_LUC_HOP_DONG.update({
+      where: { ID_PLHD: id },
+      data: { HIEU_LUC: hieuLuc }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi cập nhật trạng thái", error);
+  }
+}
+
+export async function deleteDanhMucPhuLucHopDong(id: string) {
+  try {
+    await prisma.pHU_LUC_HOP_DONG.delete({
+      where: { ID_PLHD: id }
+    });
+    return createSuccessResponse(null);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi xoá danh mục Phụ lục hợp đồng", error);
+  }
+}
+

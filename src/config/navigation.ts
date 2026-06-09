@@ -1,4 +1,4 @@
-import { LucideIcon, Users } from "lucide-react";
+import { LucideIcon, Users, Briefcase } from "lucide-react";
 
 type MenuItem = {
   title: string;
@@ -14,6 +14,13 @@ export type MenuGroup = {
 }
 
 export const menuGroups: MenuGroup[] = [
+  {
+    group: "Dự án",
+    icon: Briefcase,
+    items: [
+      { title: "Quản lý dự án", url: "/projects", icon: Briefcase },
+    ]
+  },
   {
     group: "Nhân sự",
     icon: Users,
