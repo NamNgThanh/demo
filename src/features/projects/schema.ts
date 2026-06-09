@@ -20,3 +20,19 @@ export const createProjectDetailSchema = z.object({
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type CreateProjectDetailInput = z.infer<typeof createProjectDetailSchema>;
+
+export const updateProjectDetailSchema = z.object({
+  ID_DU_AN_CT: z.string(),
+  EMAIL_SO_HUU: z.string().nullable().optional(),
+  NV_PHU_TRACH_ID: z.string().nullable().optional(),
+  nvHoTroIds: z.array(z.string()).optional(),
+  LEADER_ID: z.string().nullable().optional(),
+  DEADLINE: z.string().nullable().optional(),
+  TREO_THUONG_SO_TIEN: z.number().nullable().optional(),
+  TREO_THUONG_THOI_HAN: z.string().nullable().optional(),
+  BANG_CHUNG: z.array(z.any()).optional(),
+  nhanSuDuyTriIds: z.array(z.string()).optional(),
+  DUY_TRI_HIEU_LUC: z.boolean().optional(),
+});
+
+export type UpdateProjectDetailInput = z.infer<typeof updateProjectDetailSchema>;

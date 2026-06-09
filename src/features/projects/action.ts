@@ -37,7 +37,31 @@ export const createProject = async (data: CreateProjectInput): Promise<ResultRes
 
     // 2. Auto-generate ID (DA_YYMMDD_DOI_TAC_PLHD)
     const yymmdd = getYYMMDD();
-    const idDuAn = `DA_${yymmdd}_${doiTac}_${validatedData.ID_PLHD}`;
+    const baseId = `DA_${yymmdd}_${doiTac}_${validatedData.ID_PLHD}`;
+    let idDuAn = baseId;
+
+    const existingProjects = await prisma.dS_DU_AN.findMany({
+      where: { ID_DU_AN: { startsWith: baseId } },
+      select: { ID_DU_AN: true }
+    });
+
+    if (existingProjects.length > 0) {
+      let maxSuffix = 0;
+      let hasExactMatch = false;
+      for (const ep of existingProjects) {
+        if (ep.ID_DU_AN === baseId) {
+          hasExactMatch = true;
+        } else {
+          const suffixStr = ep.ID_DU_AN.substring(baseId.length + 1); // remove baseId and the underscore
+          if (suffixStr && !isNaN(Number(suffixStr))) {
+            maxSuffix = Math.max(maxSuffix, Number(suffixStr));
+          }
+        }
+      }
+      if (hasExactMatch || maxSuffix > 0) {
+        idDuAn = `${baseId}_${maxSuffix + 1}`;
+      }
+    }
 
     // 3. Insert vào DB
     const project = await prisma.dS_DU_AN.create({
@@ -69,12 +93,23 @@ export const createProjectDetail = async (data: CreateProjectDetailInput): Promi
 
     const validatedData = createProjectDetailSchema.parse(data);
 
-    // Auto-generate ID_DU_AN_CT (VD: CT_VNG_PL01_1)
-    const count = await prisma.dS_DU_AN_CT.count({
-      where: { ID_DU_AN: validatedData.ID_DU_AN }
+    // Lấy ID lớn nhất hiện tại để tránh trùng lặp khi có phần tử bị xoá
+    const existingDetails = await prisma.dS_DU_AN_CT.findMany({
+      where: { ID_DU_AN: validatedData.ID_DU_AN },
+      select: { ID_DU_AN_CT: true }
     });
+    
+    let maxSuffix = 0;
+    for (const d of existingDetails) {
+      const parts = d.ID_DU_AN_CT.split('_');
+      const suffix = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(suffix) && suffix > maxSuffix) {
+        maxSuffix = suffix;
+      }
+    }
+
     const shortParentId = validatedData.ID_DU_AN.replace(/^DA_\d{6}_/, ""); 
-    const idDuAnCt = `CT_${shortParentId}_${count + 1}`;
+    const idDuAnCt = `CT_${shortParentId}_${maxSuffix + 1}`;
 
     const projectDetail = await prisma.dS_DU_AN_CT.create({
       data: {
@@ -105,12 +140,11 @@ export const getProjects = async (): Promise<ResultResponse<any[]>> => {
         DS_DU_AN_CT: {
           include: {
             HANG_MUC_REL: true,
-            PHAN_BO_REL: {
-              select: {
-                HO_VA_TEN: true,
-                EMAIL: true,
-              }
-            },
+            PHAN_BO_REL: { select: { HO_VA_TEN: true, EMAIL: true } },
+            NV_PHU_TRACH_REL: { select: { ID_NHAN_VIEN: true, HO_VA_TEN: true, EMAIL: true } },
+            NV_HO_TRO_REL: { select: { ID_NHAN_VIEN: true, HO_VA_TEN: true, EMAIL: true } },
+            LEADER_REL: { select: { ID_NHAN_VIEN: true, HO_VA_TEN: true, EMAIL: true } },
+            NHAN_SU_DUY_TRI_REL: { select: { ID_NHAN_VIEN: true, HO_VA_TEN: true, EMAIL: true } }
           }
         }
       },
@@ -127,7 +161,7 @@ export const getProjects = async (): Promise<ResultResponse<any[]>> => {
       const computedDetails = project.DS_DU_AN_CT.map(detail => {
         // Cột ảo: TINH_TRANG
         let tinhTrang = "Đang triển khai";
-        if (!detail.PHAN_BO_ID) {
+        if (!detail.PHAN_BO_ID && !detail.NV_PHU_TRACH_ID) {
           tinhTrang = "Chưa phân bổ";
         } else if (currentDate < project.NGAY_DK_BAT_DAU) {
           tinhTrang = "Chưa triển khai";
@@ -135,21 +169,22 @@ export const getProjects = async (): Promise<ResultResponse<any[]>> => {
           tinhTrang = "Quá hạn";
         }
 
-        // Cột ảo DEADLINE (kế thừa từ ngày hoàn thành của dự án mẹ)
-        const deadline = project.NGAY_DK_HOAN_THANH.toISOString().split('T')[0];
-
-        // TREO_THUONG, THUC_TE, BANG_CHUNG ảo (mock)
-        const treoThuong = 0;
+        // Cột hiển thị UI (Tính toán từ các trường thật)
+        const phanBoStr = detail.NV_PHU_TRACH_REL?.HO_VA_TEN || detail.PHAN_BO_REL?.HO_VA_TEN || "Chưa phân bổ";
         const thucTe = "";
-        const bangChung: any[] = [];
 
         return {
           ...detail,
           TINH_TRANG: tinhTrang,
-          DEADLINE: deadline,
-          TREO_THUONG: treoThuong,
+          PHAN_BO: phanBoStr,
           THUC_TE: thucTe,
-          BANG_CHUNG: bangChung
+          DEADLINE: detail.DEADLINE 
+            ? new Date(detail.DEADLINE).toISOString().split('T')[0]
+            : (project.NGAY_DK_HOAN_THANH ? new Date(project.NGAY_DK_HOAN_THANH).toISOString().split('T')[0] : ""),
+          TREO_THUONG_SO_TIEN: detail.TREO_THUONG_SO_TIEN || 0,
+          TREO_THUONG_THOI_HAN: detail.TREO_THUONG_THOI_HAN 
+            ? new Date(detail.TREO_THUONG_THOI_HAN).toISOString().split('T')[0]
+            : "",
         };
       });
 
@@ -199,5 +234,84 @@ export const getProjectDetailFormOptions = async (): Promise<ResultResponse<any>
   } catch (error: any) {
     console.error("Lỗi lấy danh mục form chi tiết dự án:", error);
     return createErrorResponse("Lỗi lấy danh mục chi tiết", error);
+  }
+}
+
+export const updateProjectDetailInfo = async (data: any): Promise<ResultResponse<any>> => {
+  try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
+
+    // Parse specific fields if needed
+    const {
+      ID_DU_AN_CT,
+      EMAIL_SO_HUU,
+      NV_PHU_TRACH_ID,
+      nvHoTroIds,
+      LEADER_ID,
+      DEADLINE,
+      TREO_THUONG_SO_TIEN,
+      TREO_THUONG_THOI_HAN,
+      BANG_CHUNG,
+      nhanSuDuyTriIds,
+      DUY_TRI_HIEU_LUC
+    } = data;
+
+    const updatedDetail = await prisma.dS_DU_AN_CT.update({
+      where: { ID_DU_AN_CT },
+      data: {
+        EMAIL_SO_HUU,
+        NV_PHU_TRACH_ID: NV_PHU_TRACH_ID || null,
+        nvHoTroIds: nvHoTroIds || [],
+        LEADER_ID: LEADER_ID || null,
+        DEADLINE: DEADLINE ? new Date(DEADLINE) : null,
+        TREO_THUONG_SO_TIEN: TREO_THUONG_SO_TIEN || null,
+        TREO_THUONG_THOI_HAN: TREO_THUONG_THOI_HAN ? new Date(TREO_THUONG_THOI_HAN) : null,
+        BANG_CHUNG: BANG_CHUNG || [],
+        nhanSuDuyTriIds: nhanSuDuyTriIds || [],
+        DUY_TRI_HIEU_LUC: DUY_TRI_HIEU_LUC !== undefined ? DUY_TRI_HIEU_LUC : true,
+      }
+    });
+
+    revalidatePath(PROJECTS_PATH);
+    return createSuccessResponse(updatedDetail);
+  } catch (error: any) {
+    console.error("Lỗi cập nhật chi tiết dự án:", error);
+    return createErrorResponse(error.message || "Lỗi cập nhật hạng mục", error);
+  }
+}
+
+export const deleteProjectDetail = async (id: string): Promise<ResultResponse<any>> => {
+  try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
+
+    await prisma.dS_DU_AN_CT.delete({
+      where: { ID_DU_AN_CT: id }
+    });
+
+    revalidatePath(PROJECTS_PATH);
+    return createSuccessResponse({ id });
+  } catch (error: any) {
+    console.error("Lỗi xoá chi tiết dự án:", error);
+    return createErrorResponse(error.message || "Lỗi xoá hạng mục", error);
+  }
+}
+
+export const deleteProject = async (id: string): Promise<ResultResponse<any>> => {
+  try {
+    const session = await auth();
+    if (session?.user?.role !== "ADMIN") return createErrorResponse("Bạn không có quyền thực hiện chức năng này.");
+
+    await prisma.$transaction([
+      prisma.dS_DU_AN_CT.deleteMany({ where: { ID_DU_AN: id } }),
+      prisma.dS_DU_AN.delete({ where: { ID_DU_AN: id } })
+    ]);
+
+    revalidatePath(PROJECTS_PATH);
+    return createSuccessResponse({ id });
+  } catch (error: any) {
+    console.error("Lỗi xoá dự án:", error);
+    return createErrorResponse(error.message || "Lỗi xoá dự án", error);
   }
 }

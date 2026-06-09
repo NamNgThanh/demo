@@ -89,7 +89,16 @@ model NHAN_VIEN {
   NGAY_CHINH_THUC DateTime?
   NGAY_NGHI_VIEC  DateTime?
 
-  DS_DU_AN_CT DS_DU_AN_CT[]
+  DS_DU_AN_CT DS_DU_AN_CT[] @relation("PhanBoCtd")
+  DS_DU_AN_CT_PHU_TRACH DS_DU_AN_CT[] @relation("PhuTrach")
+  
+  hoTroCtdIds String[]
+  DS_DU_AN_CT_HO_TRO DS_DU_AN_CT[] @relation("HoTro", fields: [hoTroCtdIds], references: [ID_DU_AN_CT])
+  
+  DS_DU_AN_CT_LEADER DS_DU_AN_CT[] @relation("Leader")
+  
+  duyTriCtdIds String[]
+  DS_DU_AN_CT_DUY_TRI DS_DU_AN_CT[] @relation("DuyTri", fields: [duyTriCtdIds], references: [ID_DU_AN_CT])
 
   @@index([HO_VA_TEN])
   @@index([EMAIL])
@@ -185,6 +194,12 @@ model DS_HANG_MUC {
   DS_DU_AN_CT DS_DU_AN_CT[]
 }
 
+type BangChung {
+  TEN_DANH_MUC String
+  LINK         String
+  GHI_CHU      String?
+}
+
 model DS_DU_AN_CT {
   ID_DU_AN_CT String @id @map("_id")
 
@@ -200,5 +215,32 @@ model DS_DU_AN_CT {
   HANG_MUC_REL DS_HANG_MUC @relation(fields: [ID_HANG_MUC], references: [ID_HANG_MUC])
 
   PHAN_BO_ID  String?    @db.ObjectId
-  PHAN_BO_REL NHAN_VIEN? @relation(fields: [PHAN_BO_ID], references: [ID_NHAN_VIEN])
+  PHAN_BO_REL NHAN_VIEN? @relation("PhanBoCtd", fields: [PHAN_BO_ID], references: [ID_NHAN_VIEN])
+
+  // --- 1. NHÓM PHÂN BỔ ---
+  EMAIL_SO_HUU String?
+  
+  NV_PHU_TRACH_ID String? @db.ObjectId
+  NV_PHU_TRACH_REL NHAN_VIEN? @relation("PhuTrach", fields: [NV_PHU_TRACH_ID], references: [ID_NHAN_VIEN])
+  
+  nvHoTroIds String[] @db.ObjectId
+  NV_HO_TRO_REL NHAN_VIEN[] @relation("HoTro", fields: [nvHoTroIds], references: [ID_NHAN_VIEN])
+  
+  LEADER_ID String? @db.ObjectId
+  LEADER_REL NHAN_VIEN? @relation("Leader", fields: [LEADER_ID], references: [ID_NHAN_VIEN])
+  
+  DEADLINE DateTime?
+
+  // --- 2. NHÓM TREO THƯỞNG ---
+  TREO_THUONG_SO_TIEN Float?
+  TREO_THUONG_THOI_HAN DateTime?
+
+  // --- 3. NHÓM BẰNG CHỨNG ---
+  BANG_CHUNG BangChung[]
+
+  // --- 4. NHÓM NHÂN SỰ DUY TRÌ ---
+  nhanSuDuyTriIds String[] @db.ObjectId
+  NHAN_SU_DUY_TRI_REL NHAN_VIEN[] @relation("DuyTri", fields: [nhanSuDuyTriIds], references: [ID_NHAN_VIEN])
+  
+  DUY_TRI_HIEU_LUC Boolean @default(true)
 }

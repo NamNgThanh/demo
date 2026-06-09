@@ -5,14 +5,41 @@ import { Project } from "../types";
 import { ChevronDown, ChevronRight, FolderKanban, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { AddProjectDetailDialog } from "./AddProjectDetailDialog";
+import { deleteProject } from "../action";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 const ProjectActionCell = ({ project }: { project: Project }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      const res = await deleteProject(project.ID_DU_AN);
+      if (res.success) {
+        toast.success("Xoá dự án thành công!");
+      } else {
+        toast.error(res.error || "Có lỗi xảy ra");
+      }
+      setIsDeleteDialogOpen(false);
+    });
+  };
 
   return (
-    <>
+    <div className="flex items-center gap-1 justify-end">
       <Button
         variant="ghost"
         size="icon"
@@ -26,12 +53,50 @@ const ProjectActionCell = ({ project }: { project: Project }) => {
         <Plus className="h-5 w-5" />
       </Button>
 
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+        title="Xoá dự án"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsDeleteDialogOpen(true);
+        }}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+
       <AddProjectDetailDialog
         open={isOpen}
         onOpenChange={setIsOpen}
         project={project}
       />
-    </>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xoá dự án?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xoá dự án <span className="font-semibold text-slate-800">{project.ID_DU_AN}</span>? 
+              Tất cả các hạng mục chi tiết thuộc dự án này cũng sẽ bị xoá vĩnh viễn và không thể khôi phục.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Hủy</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isPending ? "Đang xoá..." : "Xoá Dự Án"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 };
 
