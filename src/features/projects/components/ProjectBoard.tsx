@@ -128,6 +128,7 @@ export const ProjectBoard = ({ initialData }: ProjectBoardProps) => {
         data={filteredData}
         renderSubComponent={({ row }) => <ProjectDetailsSubTable project={row.original} showBlurred={showBlurred} />}
         emptyState="Không có dự án nào."
+        headerClassName="bg-amber-100/60 hover:bg-amber-100/60"
       />
 
       <AddProjectDialog open={isAddOpen} onOpenChange={setIsAddOpen} />

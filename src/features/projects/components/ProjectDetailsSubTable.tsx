@@ -69,7 +69,7 @@ export function ProjectDetailsSubTable({ project, showBlurred = true }: ProjectD
     <div className="p-4 bg-slate-50/80 border-t border-b border-slate-100 shadow-inner w-full">
       <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-sm">
         <Table>
-          <TableHeader className="bg-slate-100/50">
+          <TableHeader className="bg-blue-50/80">
             <TableRow>
               <TableHead className="w-[120px] font-semibold text-slate-700">Mã Chi Tiết</TableHead>
               <TableHead className="font-semibold text-slate-700">Tên Dự Án CT</TableHead>
