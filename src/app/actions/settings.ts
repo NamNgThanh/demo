@@ -282,3 +282,205 @@ export async function deleteDanhMucHangMuc(id: string) {
   }
 }
 
+
+// --- DANH MUC NHOM BIEU MAU ---
+export async function getDanhMucNhomBm() {
+  try {
+    const data = await prisma.nHOM_BM.findMany({
+      orderBy: { TEN_NHOM: 'asc' }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi lấy danh mục nhóm BM", error);
+  }
+}
+
+export async function addDanhMucNhomBm(idNhom: string, tenNhom: string) {
+  try {
+    const existing = await prisma.nHOM_BM.findUnique({ where: { ID_NHOM: idNhom } });
+    if (existing) {
+      return createErrorResponse("Mã Nhóm biểu mẫu đã tồn tại trong hệ thống.");
+    }
+
+    const data = await prisma.nHOM_BM.create({
+      data: {
+        ID_NHOM: idNhom,
+        TEN_NHOM: tenNhom,
+        HIEU_LUC: true
+      }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi thêm danh mục nhóm BM", error);
+  }
+}
+
+export async function toggleDanhMucNhomBm(id: string, hieuLuc: boolean) {
+  try {
+    const data = await prisma.nHOM_BM.update({
+      where: { ID_NHOM: id },
+      data: { HIEU_LUC: hieuLuc }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi cập nhật trạng thái nhóm BM", error);
+  }
+}
+
+export async function deleteDanhMucNhomBm(id: string) {
+  try {
+    await prisma.nHOM_BM.delete({
+      where: { ID_NHOM: id }
+    });
+    return createSuccessResponse(null);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi xoá danh mục nhóm BM", error);
+  }
+}
+
+// --- DANH MUC DANH SACH BIEU MAU ---
+export async function getDanhMucDsBm() {
+  try {
+    const data = await prisma.dS_BM.findMany({
+      orderBy: { TEN_BM: 'asc' }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi lấy danh sách BM", error);
+  }
+}
+
+export async function addDanhMucDsBm(idBm: string, tenBm: string, idNhom: string) {
+  try {
+    const existing = await prisma.dS_BM.findUnique({ 
+      where: { 
+        ID_BM_ID_NHOM: {
+          ID_BM: idBm,
+          ID_NHOM: idNhom
+        }
+      } 
+    });
+    if (existing) {
+      return createErrorResponse("Mã Biểu mẫu này đã tồn tại trong Nhóm biểu mẫu đã chọn.");
+    }
+
+    const data = await prisma.dS_BM.create({
+      data: {
+        ID_BM: idBm,
+        TEN_BM: tenBm,
+        ID_NHOM: idNhom,
+        HIEU_LUC: true
+      }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi thêm danh sách BM", error);
+  }
+}
+
+export async function toggleDanhMucDsBm(id: string, hieuLuc: boolean) {
+  try {
+    const data = await prisma.dS_BM.update({
+      where: { id: id },
+      data: { HIEU_LUC: hieuLuc }
+    });
+    return createSuccessResponse(data);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi cập nhật trạng thái BM", error);
+  }
+}
+
+export async function deleteDanhMucDsBm(id: string) {
+  try {
+    await prisma.dS_BM.delete({
+      where: { id: id }
+    });
+    return createSuccessResponse(null);
+  } catch (error) {
+    return createErrorResponse("Lỗi khi xoá BM", error);
+  }
+}
+
+function generateSlug(text: string) {
+  return text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export async function importBulkFormsFromExcel(textData: string) {
+  try {
+    const lines = textData.split('\n');
+    let currentGroupId = "";
+    
+    let addedGroups = 0;
+    let addedForms = 0;
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      
+      const cols = line.split('\t');
+      // Nếu copy từ Excel có ô merge, dòng đầu sẽ có Nhóm (cols[0]), các dòng sau cols[0] sẽ rỗng.
+      let groupName = cols[0]?.trim();
+      let formName = cols[1]?.trim();
+
+      // Trường hợp không có tab (người dùng copy lộn hoặc tự gõ)
+      if (cols.length === 1) {
+         // Thử check xem có phải số thứ tự không "1. Form báo giá"
+         if (/^\d+\./.test(line.trim())) {
+             formName = line.trim();
+             groupName = "";
+         } else {
+             groupName = line.trim();
+             formName = "";
+         }
+      }
+
+      // Xử lý Nhóm
+      if (groupName) {
+        currentGroupId = generateSlug(groupName);
+        if (currentGroupId) {
+          // Upsert nhóm
+          await prisma.nHOM_BM.upsert({
+            where: { ID_NHOM: currentGroupId },
+            update: { TEN_NHOM: groupName },
+            create: { ID_NHOM: currentGroupId, TEN_NHOM: groupName, HIEU_LUC: true }
+          });
+          addedGroups++;
+        }
+      }
+
+      // Xử lý Form
+      if (formName && currentGroupId) {
+        // Lấy số từ "1. Form báo giá"
+        const match = formName.match(/^(\d+)[\.\)]?\s*(.+)$/);
+        let cleanFormName = formName;
+        let formId = "";
+        
+        if (match) {
+          formId = match[1].padStart(2, '0'); // "01", "02"
+          cleanFormName = match[2].trim();
+        } else {
+          // Tự sinh ID nếu không có số
+          formId = generateSlug(cleanFormName).substring(0, 10);
+        }
+
+        if (cleanFormName) {
+           await prisma.dS_BM.upsert({
+             where: { 
+               ID_BM_ID_NHOM: { ID_BM: formId, ID_NHOM: currentGroupId }
+             },
+             update: { TEN_BM: cleanFormName },
+             create: { ID_BM: formId, TEN_BM: cleanFormName, ID_NHOM: currentGroupId, HIEU_LUC: true }
+           });
+           addedForms++;
+        }
+      }
+    }
+
+    return createSuccessResponse({ addedGroups, addedForms });
+  } catch (error) {
+    console.error(error);
+    return createErrorResponse("Lỗi khi nhập dữ liệu hàng loạt", error);
+  }
+}

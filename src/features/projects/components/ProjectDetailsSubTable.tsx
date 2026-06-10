@@ -10,6 +10,8 @@ import { useState, useTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 import { UpdateProjectDetailDialog } from "./UpdateProjectDetailDialog";
 import { deleteProjectDetail, toggleProjectDetailBlur } from "../action";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormRequestTable } from "./FormRequestTable";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,7 +73,23 @@ export function ProjectDetailsSubTable({ project, showBlurred = true }: ProjectD
 
   return (
     <div className="p-4 bg-slate-50/80 border-t border-b border-slate-100 shadow-inner w-full">
-      <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-sm">
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList className="mb-4 bg-white border shadow-sm">
+          <TabsTrigger value="details" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
+            Hạng mục chi tiết
+          </TabsTrigger>
+          <TabsTrigger value="forms" className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">
+            Yêu cầu biểu mẫu
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="details" className="mt-0 focus-visible:outline-none">
+          {(!details || details.length === 0) ? (
+            <div className="p-8 text-center text-slate-500 italic bg-white rounded-lg border shadow-sm">
+              Không có chi tiết dự án.
+            </div>
+          ) : (
+            <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-sm">
         <Table>
           <TableHeader className="bg-blue-50/80">
             <TableRow>
@@ -198,7 +216,13 @@ export function ProjectDetailsSubTable({ project, showBlurred = true }: ProjectD
             )})}
           </TableBody>
         </Table>
-      </div>
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="forms" className="mt-0 focus-visible:outline-none">
+          <FormRequestTable project={project} />
+        </TabsContent>
+      </Tabs>
 
       <UpdateProjectDetailDialog
         open={isUpdateOpen}

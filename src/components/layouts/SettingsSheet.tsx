@@ -45,6 +45,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NhomBmManager, DsBmManager } from "./FormSettingsManagers";
 
 export function SettingsSheet() {
   const [open, setOpen] = useState(false);
@@ -57,6 +58,8 @@ export function SettingsSheet() {
     { id: "nhom-du-an", label: "Nhóm dự án", icon: Layers },
     { id: "phu-luc-hop-dong", label: "Phụ lục hợp đồng", icon: FileText },
     { id: "hang-muc", label: "Hạng mục (DS CT)", icon: ListTodo },
+    { id: "nhom-bm", label: "Nhóm biểu mẫu", icon: Layers },
+    { id: "ds-bm", label: "Danh sách biểu mẫu", icon: FileText },
   ];
 
   return (
@@ -97,8 +100,8 @@ export function SettingsSheet() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
-            <div className="max-w-2xl mx-auto">
+          <div className="flex-1 overflow-y-auto bg-slate-50/50">
+            <div className="max-w-2xl mx-auto p-8">
               <div className="mb-6">
                 <h3 className="text-2xl font-semibold text-slate-800">
                   {menuItems.find(m => m.id === activeTab)?.label}
@@ -111,6 +114,8 @@ export function SettingsSheet() {
               {activeTab === "nhom-du-an" && <NhomDuAnManager />}
               {activeTab === "phu-luc-hop-dong" && <PhuLucHopDongManager />}
               {activeTab === "hang-muc" && <HangMucManager />}
+              {activeTab === "nhom-bm" && <NhomBmManager />}
+              {activeTab === "ds-bm" && <DsBmManager />}
             </div>
           </div>
         </div>

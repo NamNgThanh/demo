@@ -184,6 +184,7 @@ model DS_DU_AN {
   THUC_TE            String?
 
   DS_DU_AN_CT DS_DU_AN_CT[]
+  YC_BIEU_MAU YC_BIEU_MAU[]
 }
 
 model DS_HANG_MUC {
@@ -245,4 +246,50 @@ model DS_DU_AN_CT {
   NHAN_SU_DUY_TRI_REL NHAN_VIEN[] @relation("DuyTri", fields: [nhanSuDuyTriIds], references: [ID_NHAN_VIEN])
   
   DUY_TRI_HIEU_LUC Boolean @default(true)
+}
+
+model NHOM_BM {
+  // Khóa chính do người dùng tự nhập (ví dụ: chuỗi ký tự)
+  // Nếu muốn hệ thống tự động sinh ID, hãy đổi thành: ID_NHOM String @id @default(auto()) @map("_id") @db.ObjectId
+  ID_NHOM   String  @id @map("_id")
+  
+  // Tên nhóm biểu mẫu/biểu mẫu
+  TEN_NHOM  String
+  
+  // Trạng thái hiệu lực (mặc định là true)
+  HIEU_LUC  Boolean @default(true)
+  DS_BM     DS_BM[]
+}
+
+model DS_BM {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  // Mã biểu mẫu (hiển thị)
+  ID_BM           String   
+  
+  // Tên biểu mẫu
+  TEN_BM          String
+  
+  // Khóa ngoại liên kết tới nhóm biểu mẫu
+  ID_NHOM         String
+  NHOM_BM_REL     NHOM_BM  @relation(fields: [ID_NHOM], references: [ID_NHOM])
+  
+  // Trạng thái hiệu lực
+  HIEU_LUC        Boolean  @default(true)
+
+  @@unique([ID_BM, ID_NHOM])
+}
+
+model YC_BIEU_MAU {
+  ID_YC_BM       String   @id @default(auto()) @map("_id") @db.ObjectId
+  ID_DU_AN       String
+  DU_AN_REL      DS_DU_AN @relation(fields: [ID_DU_AN], references: [ID_DU_AN])
+  
+  NHOM_BIEU_MAU  String[]
+  BIEU_MAU_CAN   String[]
+  
+  GHI_CHU        String?
+  LINK           String?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

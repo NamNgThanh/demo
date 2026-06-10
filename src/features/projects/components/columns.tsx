@@ -2,12 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Project } from "../types";
-import { ChevronDown, ChevronRight, FolderKanban, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, FolderKanban, Plus, Trash2, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { AddProjectDetailDialog } from "./AddProjectDetailDialog";
+import { PrepareFormDialog } from "./PrepareFormDialog";
 import { deleteProject } from "../action";
 import {
   AlertDialog,
@@ -19,7 +20,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
 
 const ProjectActionCell = ({ project }: { project: Project }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,6 +40,18 @@ const ProjectActionCell = ({ project }: { project: Project }) => {
 
   return (
     <div className="flex items-center gap-1 justify-end">
+      <PrepareFormDialog project={project}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+          title="Chuẩn bị biểu mẫu"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ClipboardList className="h-5 w-5" />
+        </Button>
+      </PrepareFormDialog>
+
       <Button
         variant="ghost"
         size="icon"
