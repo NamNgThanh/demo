@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 import { UpdateProjectDetailDialog } from "./UpdateProjectDetailDialog";
 import { deleteProjectDetail, toggleProjectDetailBlur } from "../action";
@@ -28,6 +28,11 @@ interface ProjectDetailsSubTableProps {
 
 export function ProjectDetailsSubTable({ project, showBlurred = true }: ProjectDetailsSubTableProps) {
   const details = project.DS_DU_AN_CT;
+  const [optimisticDetails, addOptimisticDetail] = useOptimistic(
+    details || [],
+    (state, { id, isBlurred }: { id: string, isBlurred: boolean }) => 
+      state.map(d => d.ID_DU_AN_CT === id ? { ...d, IS_BLURRED: isBlurred } : d)
+  );
   const [selectedDetail, setSelectedDetail] = useState<ProjectDetail | null>(null);
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -48,10 +53,9 @@ export function ProjectDetailsSubTable({ project, showBlurred = true }: ProjectD
 
   const handleToggleBlur = (id: string, currentStatus: boolean) => {
     startTransition(async () => {
+      addOptimisticDetail({ id, isBlurred: !currentStatus });
       const res = await toggleProjectDetailBlur(id, !currentStatus);
-      if (res.success) {
-        // UI updates automatically because of revalidatePath
-      } else {
+      if (!res.success) {
         toast.error(res.error || "Có lỗi xảy ra khi cập nhật trạng thái");
       }
     });
@@ -84,7 +88,7 @@ export function ProjectDetailsSubTable({ project, showBlurred = true }: ProjectD
             </TableRow>
           </TableHeader>
           <TableBody>
-            {details.map((detail) => {
+            {optimisticDetails.map((detail) => {
               if (detail.IS_BLURRED && !showBlurred) return null;
               
               return (
